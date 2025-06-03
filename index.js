@@ -9,65 +9,67 @@ import { findJsFilesWithRelativePath } from "./src/file_utils.js";
 import TypeScriptServer from "./src/servers/typescript.js";
 import FileCrawler from "./src/file-crawler.js";
 
-console.log();
-await deleteNodes();
-const logger = new Logger({ level: "debug" });
-const server = new TypeScriptServer(logger);
-server.start();
-await server.initialize();
+async function crawl() {
+  await deleteNodes();
+  const logger = new Logger({ level: "debug" });
+  const server = new TypeScriptServer(logger);
+  server.start();
+  await server.initialize();
 
-const lspClient = new LspClient({
-  server,
-  logger,
-});
+  const lspClient = new LspClient({
+    server,
+    logger,
+  });
 
-const rootPath = process.argv[2];
+  const rootPath = process.argv[2];
 
-const jsFiles = findJsFilesWithRelativePath(rootPath);
+  const jsFiles = findJsFilesWithRelativePath(rootPath);
 
-for (const file of jsFiles) {
-  await lspClient.notifyFileOpen(file.uri, file.source);
-}
+  for (const file of jsFiles) {
+    await lspClient.notifyFileOpen(file.uri, file.source);
+  }
 
-for (const file of jsFiles) {
-  await new FileCrawler(file, logger, lspClient).crawl();
-}
+  for (const file of jsFiles) {
+    await new FileCrawler(file, logger, lspClient).crawl();
+  }
 
-const methods = await findAllMethods();
+  const methods = await findAllMethods();
 
-const methodsAndReferences = await Promise.all(
-  methods.map(async (method) => {
-    const result = await lspClient.findAllReferences(method, method.file);
-    const mappedReferences = result.map((reference) => {
-      return methods.find((method) => {
-        return (
-          reference.uri == method.file &&
-          reference.range.start.line > method.range.start.line &&
-          reference.range.start.line < method.range.end.line
-        );
+  const methodsAndReferences = await Promise.all(
+    methods.map(async (method) => {
+      const result = await lspClient.findAllReferences(method, method.file);
+      const mappedReferences = result.map((reference) => {
+        return methods.find((method) => {
+          return (
+            reference.uri == method.file &&
+            reference.range.start.line > method.range.start.line &&
+            reference.range.start.line < method.range.end.line
+          );
+        });
       });
-    });
-    return {
-      method,
-      references: result,
-      mappedReferences,
-    };
-  })
-).catch((err) => logger.error(err));
+      return {
+        method,
+        references: result,
+        mappedReferences,
+      };
+    })
+  ).catch((err) => logger.error(err));
 
-for (let i = 0; i < methodsAndReferences.length; i++) {
-  const methodAndReference = methodsAndReferences[i];
-  for (const reference of methodAndReference.mappedReferences) {
-    if (reference) {
-      await createRelationship(
-        reference.id,
-        methodAndReference.method.id,
-        "CALLS"
-      );
+  for (let i = 0; i < methodsAndReferences.length; i++) {
+    const methodAndReference = methodsAndReferences[i];
+    for (const reference of methodAndReference.mappedReferences) {
+      if (reference) {
+        await createRelationship(
+          reference.id,
+          methodAndReference.method.id,
+          "CALLS"
+        );
+      }
     }
   }
+
+  console.log("done");
+  server.shutdown();
 }
 
-let result = await lspClient.findAllReferences(methods[2], methods[2].file);
-console.log("done");
-server.shutdown();
+await crawl();
