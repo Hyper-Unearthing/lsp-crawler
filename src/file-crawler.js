@@ -8,10 +8,10 @@ import SymbolProcessor, { SymbolKind } from "./symbol_parser.js";
 
 async function insertClass(symbol, file) {
   await insertClassNode(symbol);
-  await createRelationship(file.id, symbol.identifier, "DECLARES");
+  await createRelationship(file.id, symbol.id, "DECLARES");
   for (const method of symbol.methods) {
     await insertMethodNode(method);
-    await createRelationship(symbol.identifier, method.identifier, "HAS");
+    await createRelationship(symbol.id, method.id, "HAS");
   }
 }
 
@@ -51,7 +51,7 @@ export default class FileCrawler {
       ) {
         // await this.lspSugar.findAllReferences(symbol, uri);
         await insertMethodNode(symbol);
-        await createRelationship(fileNode.id, symbol.identifier, "DECLARES");
+        await createRelationship(fileNode.id, symbol.id, "DECLARES");
       }
     }
   }
