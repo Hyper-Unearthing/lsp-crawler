@@ -30,10 +30,7 @@ export default class LspClient {
       this.logger.warn(`No symbols found in ${filePath}`);
       return [];
     } catch (err) {
-      this.logger.errorWithStack(
-        `Error getting document symbols: ${err.message}`,
-        err
-      );
+      this.logger.error(`Error getting document symbols: ${err.message}`, err);
 
       return [];
     }
@@ -64,7 +61,7 @@ export default class LspClient {
 
       return [];
     } catch (err) {
-      this.logger.errorWithStack(
+      this.logger.error(
         `Error finding references for method ${targetMethod.name}: ${err.message}`,
         err
       );
@@ -95,10 +92,7 @@ export default class LspClient {
       this.logger.warn(`No semantic tokens found in ${filePath}`);
       return [];
     } catch (err) {
-      this.logger.errorWithStack(
-        `Error getting semantic tokens: ${err.message}`,
-        err
-      );
+      this.logger.error(`Error getting semantic tokens: ${err.message}`, err);
       return [];
     }
   }
@@ -135,7 +129,7 @@ export default class LspClient {
       this.logger.warn(`No semantic tokens found in range for ${filePath}`);
       return [];
     } catch (err) {
-      this.logger.errorWithStack(
+      this.logger.error(
         `Error getting semantic tokens for range: ${err.message}`,
         err
       );

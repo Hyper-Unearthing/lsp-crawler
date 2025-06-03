@@ -31,46 +31,37 @@ export default class Logger {
    * Log an error message
    */
   error(message) {
-    if (this.isLevelEnabled("error")) {
-      console.error(this.formatMessage("error", message));
-      console.trace();
-    }
+    this.writeLog("error", message);
   }
 
   /**
    * Log a warning message
    */
   warn(message) {
-    if (this.isLevelEnabled("warn")) {
-      console.warn(this.formatMessage("warn", message));
-    }
+    this.writeLog("warn", message);
   }
 
   /**
    * Log an info message
    */
   info(message) {
-    if (this.isLevelEnabled("info")) {
-      console.info(this.formatMessage("info", message));
-    }
+    this.writeLog("info", message);
   }
 
   /**
    * Log a debug message
    */
   debug(message) {
-    if (this.isLevelEnabled("debug")) {
-      console.debug(this.formatMessage("debug", message));
-    }
+    this.writeLog("debug", message);
   }
 
-  /**
-   * Log an error message with stack trace
-   */
-  errorWithStack(message, error) {
-    if (this.isLevelEnabled("error")) {
-      const stackTrace = error && error.stack ? `\n${error.stack}` : "";
-      console.error(this.formatMessage("error", `${message}${stackTrace}`));
+  writeLog(level, message) {
+    if (this.isLevelEnabled(level)) {
+      const consoleMethod = console[level];
+      consoleMethod(this.formatMessage(level, message));
+      if (level === "error") {
+        console.trace();
+      }
     }
   }
 }
