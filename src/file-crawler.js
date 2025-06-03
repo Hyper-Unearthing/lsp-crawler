@@ -27,7 +27,9 @@ export default class FileCrawler {
     const logger = this.logger;
     const symbolProcessor = new SymbolProcessor(source, logger);
     let rawSymbols = await this.lspSugar.getDocumentSymbols(uri);
-    let symbols = await Promise.all(symbolProcessor.processSymbols(rawSymbols));
+    let symbols = (
+      await Promise.all(symbolProcessor.processSymbols(rawSymbols))
+    ).filter(Boolean);
 
     const fileNode = {
       uri: uri,
