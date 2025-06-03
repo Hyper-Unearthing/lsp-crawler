@@ -33,7 +33,7 @@ export async function insertMethodNode(method) {
   await session.run(
     "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source",
     {
-      id: method.identifier,
+      id: method.id,
       name: method.name,
       range: JSON.stringify(method.range) || "",
       source: method.source || "",
@@ -47,7 +47,7 @@ export async function insertClassNode(classNode) {
   await session.run(
     "MERGE (c:Class {id: $id}) ON CREATE SET c.name = $name, c.range = $range, c.source = $source",
     {
-      id: classNode.identifier,
+      id: classNode.id,
       name: classNode.name,
       range: JSON.stringify(classNode.range),
       source: classNode.source,

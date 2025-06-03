@@ -50,16 +50,25 @@ export default class SymbolProcessor {
    */
   async processSymbol(symbol, parentSymbol = null) {
     const symbolKind = symbol.kind;
-
+    let parsedSymbol = null;
     switch (symbolKind) {
       case SymbolKind.Class:
-        return await this.processClass(symbol);
+        parsedSymbol = await this.processClass(symbol);
+        break;
 
       case SymbolKind.Method:
       case SymbolKind.Function:
       case SymbolKind.Constructor:
-        return await this.processMethod(symbol, parentSymbol);
+        parsedSymbol = await this.processMethod(symbol, parentSymbol);
+        break;
     }
+
+    const sourceText = this.extractSourceTextFromRange(symbol.range);
+    return {
+      ...parsedSymbol,
+      id: await this.buildIdentifier(sourceText),
+      source: sourceText,
+    };
   }
 
   /**
@@ -67,21 +76,14 @@ export default class SymbolProcessor {
    */
   async processClass(symbol) {
     const className = symbol.name;
-    const sourceText = this.extractSourceTextFromRange(symbol.range);
+
     const methodPromises = (symbol.children || []).map((child) => {
-      if (
-        child.kind === SymbolKind.Method ||
-        child.kind === SymbolKind.Constructor
-      ) {
-        return this.processMethod(child, symbol);
-      }
+      return this.processSymbol(child, symbol);
     });
     return {
       name: className,
       kind: symbol.kind,
       range: symbol.range,
-      source: sourceText,
-      identifier: await this.buildIdentifier(sourceText),
       methods: await Promise.all(methodPromises),
     };
   }
@@ -91,14 +93,10 @@ export default class SymbolProcessor {
    */
   async processMethod(symbol, parentSymbol) {
     const methodName = symbol.name;
-    const sourceText = this.extractSourceTextFromRange(symbol.range);
-    // Create method info
     return {
       name: methodName,
       range: symbol.range,
       kind: symbol.kind,
-      source: sourceText,
-      identifier: await this.buildIdentifier(sourceText),
     };
   }
 
