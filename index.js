@@ -9,7 +9,6 @@ import { findJsFilesWithRelativePath } from "./src/file_utils.js";
 import TypeScriptServer from "./src/servers/typescript.js";
 import FileCrawler from "./src/file-crawler.js";
 
-console.log();
 await deleteNodes();
 const logger = new Logger({ level: "debug" });
 const server = new TypeScriptServer(logger);
@@ -68,6 +67,5 @@ for (let i = 0; i < methodsAndReferences.length; i++) {
   }
 }
 
-let result = await lspClient.findAllReferences(methods[2], methods[2].file);
 console.log("done");
 server.shutdown();
