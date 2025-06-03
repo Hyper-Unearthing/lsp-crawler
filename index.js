@@ -5,7 +5,7 @@ import {
   findAllMethods,
   createRelationship,
 } from "./src/database.js";
-import { findJsFilesWithRelativePath } from "./src/file_utils.js";
+import { findSupportedFiles } from "./src/file_utils.js";
 import TypeScriptServer from "./src/servers/typescript.js";
 import FileCrawler from "./src/file-crawler.js";
 
@@ -23,13 +23,13 @@ async function crawl() {
 
   const rootPath = process.argv[2];
 
-  const jsFiles = findJsFilesWithRelativePath(rootPath);
+  const filesByLanguageHash = findSupportedFiles(rootPath);
 
-  for (const file of jsFiles) {
+  for (const file of filesByLanguageHash["typescript"]) {
     await lspClient.notifyFileOpen(file.uri, file.source);
   }
 
-  for (const file of jsFiles) {
+  for (const file of filesByLanguageHash["typescript"]) {
     await new FileCrawler(file, logger, lspClient).crawl();
   }
 
