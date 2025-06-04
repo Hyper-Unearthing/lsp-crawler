@@ -29,9 +29,10 @@ export const SymbolKind = {
 };
 
 export default class SymbolProcessor {
-  constructor(source, logger) {
+  constructor(source, logger, language) {
     this.source = source;
     this.logger = logger;
+    this.language = language;
     this.lines = source.split("\n");
   }
 
@@ -68,6 +69,7 @@ export default class SymbolProcessor {
       ...parsedSymbol,
       id: await this.buildIdentifier(sourceText),
       source: sourceText,
+      language: this.language,
     };
   }
 
@@ -85,6 +87,7 @@ export default class SymbolProcessor {
       kind: symbol.kind,
       range: symbol.range,
       methods: await Promise.all(methodPromises),
+      language: this.language,
     };
   }
 

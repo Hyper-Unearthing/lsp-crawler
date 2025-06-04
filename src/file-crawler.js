@@ -25,7 +25,8 @@ export default class FileCrawler {
   async crawl() {
     const { source, uri, relativePath } = this.file;
     const logger = this.logger;
-    const symbolProcessor = new SymbolProcessor(source, logger);
+    const language = this.lspSugar.language;
+    const symbolProcessor = new SymbolProcessor(source, logger, language);
     let rawSymbols = await this.lspSugar.getDocumentSymbols(uri);
     let symbols = (
       await Promise.all(symbolProcessor.processSymbols(rawSymbols))
@@ -35,6 +36,7 @@ export default class FileCrawler {
       uri: uri,
       name: relativePath,
       id: relativePath,
+      language: language,
     };
 
     await insertFileNode(fileNode);

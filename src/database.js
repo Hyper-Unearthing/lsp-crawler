@@ -18,11 +18,12 @@ export async function deleteNodes() {
 export async function insertFileNode(file) {
   const session = getSession();
   await session.run(
-    "MERGE (f:File {id: $id}) ON CREATE SET f.uri = $uri, f.name = $name",
+    "MERGE (f:File {id: $id}) ON CREATE SET f.uri = $uri, f.name = $name, f.language = $language",
     {
       id: file.id,
       uri: file.uri,
       name: file.name,
+      language: file.language,
     }
   );
   await session.close();
@@ -31,26 +32,28 @@ export async function insertFileNode(file) {
 export async function insertMethodNode(method) {
   const session = getSession();
   await session.run(
-    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source",
+    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source, m.language = $language",
     {
       id: method.id,
       name: method.name,
       range: JSON.stringify(method.range) || "",
       source: method.source || "",
+      language: method.language,
     }
   );
   await session.close();
 }
 
-export async function insertClassNode(classNode) {
+export async function insertClassNode(klass) {
   const session = getSession();
   await session.run(
-    "MERGE (c:Class {id: $id}) ON CREATE SET c.name = $name, c.range = $range, c.source = $source",
+    "MERGE (c:Class {id: $id}) ON CREATE SET c.name = $name, c.range = $range, c.source = $source, c.language = $language",
     {
-      id: classNode.id,
-      name: classNode.name,
-      range: JSON.stringify(classNode.range),
-      source: classNode.source,
+      id: klass.id,
+      name: klass.name,
+      range: JSON.stringify(klass.range) || "",
+      source: klass.source || "",
+      language: klass.language,
     }
   );
   await session.close();
@@ -74,7 +77,7 @@ export async function findAllMethods() {
     MATCH (f:File)
     MATCH (m:Method)
     MATCH path = (f)-[*]-(m)
-    RETURN f.uri as file, m.name as method, m.range as range, m.id as id
+    RETURN f.uri as file, m.name as method, m.range as range, m.id as id, m.language as language
     ORDER BY file, method
 `);
   await session.close();

@@ -1,10 +1,31 @@
 import path from "path";
 import fs from "fs";
+import TypeScriptServer from "./servers/typescript.js";
+
+function serverForLanguage(language) {
+  switch (language) {
+    case "typescript":
+      return TypeScriptServer;
+
+    default:
+      throw new Error(`Unsupported language: ${language}`);
+  }
+}
 
 export default class LspClient {
-  constructor({ server, logger }) {
-    this.server = server;
+  constructor({ language, logger }) {
+    this.language = language;
     this.logger = logger;
+  }
+
+  async connect() {
+    this.server = new (serverForLanguage(this.language))(this.logger);
+    this.server.start();
+    await this.server.initialize();
+  }
+
+  async shutdown() {
+    this.server.shutdown();
   }
 
   async getDocumentSymbols(filePath) {
