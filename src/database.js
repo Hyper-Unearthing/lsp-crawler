@@ -74,11 +74,11 @@ export async function createRelationship(fromId, toId, type) {
 export async function findAllMethods() {
   const session = getSession();
   const result = await session.run(`
-    MATCH (f:File)
-    MATCH (m:Method)
-    MATCH path = (f)-[*]-(m)
-    RETURN f.uri as file, m.name as method, m.range as range, m.id as id, m.language as language
-    ORDER BY file, method
+    MATCH (f:File)-[:DECLARES*]->(m:Method)
+    RETURN DISTINCT f.uri as file, m.name as name, m.range as range, m.id as id, m.language as language
+    UNION
+    MATCH (f:File)-[:DECLARES*]->(c:Class)-[:HAS]->(m:Method)
+    RETURN DISTINCT f.uri as file, m.name as name, m.range as range, m.id as id, m.language as language
 `);
   await session.close();
   return result.records.map((record) => {
