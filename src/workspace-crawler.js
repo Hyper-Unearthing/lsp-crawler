@@ -50,7 +50,7 @@ export default class WorkspaceCrawler {
         const mappedReferences = result
           .filter((reference) => reference && reference.uri) // Filter out undefined references
           .map((reference) => {
-            const containingMethods = (
+            const candidateMethods = (
               methodByFileMap[reference.uri] || []
             ).filter((method) => {
               return (
@@ -60,23 +60,17 @@ export default class WorkspaceCrawler {
               );
             });
 
-            // If multiple methods contain the reference, choose the most specific (smallest range)
-            const containingMethod = containingMethods.reduce(
-              (mostSpecific, current) => {
-                if (!mostSpecific) return current;
-
-                const currentSize =
-                  current.range.end.line - current.range.start.line;
-                const mostSpecificSize =
-                  mostSpecific.range.end.line - mostSpecific.range.start.line;
-
-                return currentSize < mostSpecificSize ? current : mostSpecific;
-              },
-              null
-            );
-
-            return containingMethod;
+            // Find the nearest match (method with the closest start line to the reference)
+            return candidateMethods.reduce((nearest, current) => {
+              if (!nearest) return current;
+              const nearestDistance =
+                reference.range.start.line - nearest.range.start.line;
+              const currentDistance =
+                reference.range.start.line - current.range.start.line;
+              return currentDistance < nearestDistance ? current : nearest;
+            }, null);
           });
+
         return {
           method,
           references: result,
