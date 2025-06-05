@@ -5,36 +5,43 @@ import {
   findAllMethods,
   createRelationship,
 } from "./src/database.js";
-import { findJsFilesWithRelativePath } from "./src/file_utils.js";
-import TypeScriptServer from "./src/servers/typescript.js";
+import { findSupportedFiles } from "./src/file_utils.js";
 import FileCrawler from "./src/file-crawler.js";
 
 async function crawl() {
+  const logger = new Logger({ level: "info" });
   await deleteNodes();
-  const logger = new Logger({ level: "debug" });
-  const server = new TypeScriptServer(logger);
-  server.start();
-  await server.initialize();
-
-  const lspClient = new LspClient({
-    server,
-    logger,
-  });
 
   const rootPath = process.argv[2];
 
-  const jsFiles = findJsFilesWithRelativePath(rootPath);
+  const filesByLanguageHash = findSupportedFiles(rootPath);
 
-  for (const file of jsFiles) {
+  for (const language in filesByLanguageHash) {
+    await processLanguage(language, filesByLanguageHash[language], logger);
+  }
+
+  console.log("done");
+}
+
+async function processLanguage(language, files, logger) {
+  const lspClient = new LspClient({
+    language,
+    logger,
+  });
+
+  await lspClient.connect();
+  for (const file of files) {
     await lspClient.notifyFileOpen(file.uri, file.source);
   }
 
-  for (const file of jsFiles) {
+  for (const file of files) {
     await new FileCrawler(file, logger, lspClient).crawl();
   }
 
-  const methods = await findAllMethods();
+  logger.info("Finding all inserted methods");
+  const methods = await findAllMethods(language);
 
+  logger.info("Finding all method references");
   const methodsAndReferences = await Promise.all(
     methods.map(async (method) => {
       const result = await lspClient.findAllReferences(method, method.file);
@@ -55,6 +62,7 @@ async function crawl() {
     })
   ).catch((err) => logger.error(err));
 
+  logger.info("Linking all method references in database");
   for (let i = 0; i < methodsAndReferences.length; i++) {
     const methodAndReference = methodsAndReferences[i];
     for (const reference of methodAndReference.mappedReferences) {
@@ -67,9 +75,6 @@ async function crawl() {
       }
     }
   }
-
-  console.log("done");
-  server.shutdown();
+  lspClient.shutdown();
 }
-
 await crawl();

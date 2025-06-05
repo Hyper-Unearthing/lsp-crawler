@@ -50,8 +50,14 @@ function shouldIgnore(filePath, rootPath, ignorePatterns) {
  * @param {string} rootPath - The root directory to search in
  * @returns {Array} - Array of file objects with uri, relativePath, and source
  */
-export function findJsFilesWithRelativePath(rootPath) {
-  const result = [];
+export function findSupportedFiles(
+  rootPath,
+  supportedExtensions = {
+    ".js": "typescript",
+    ".ts": "typescript",
+  }
+) {
+  const result = {};
   const normalizedRootPath = path.normalize(rootPath);
   const gitignorePath = path.join(normalizedRootPath, ".gitignore");
   const ignorePatterns = parseGitignore(gitignorePath);
@@ -73,15 +79,26 @@ export function findJsFilesWithRelativePath(rootPath) {
       if (stats.isDirectory()) {
         // Recursively search subdirectories
         searchDirectory(filePath);
-      } else if (file.endsWith(".js")) {
-        // Create hash object for JS files with relative path
-        const absolutePath = path.resolve(filePath);
-        const fileObj = {
-          uri: URI.file(absolutePath).toString(),
-          relativePath: path.relative(normalizedRootPath, absolutePath),
-          source: fs.readFileSync(absolutePath, "utf8"),
-        };
-        result.push(fileObj);
+      } else {
+        // Check if file extension is supported
+        const fileExtension = path.extname(file);
+        const language = supportedExtensions[fileExtension];
+
+        if (language) {
+          // Initialize language array if it doesn't exist
+          if (!result[language]) {
+            result[language] = [];
+          }
+
+          // Create file object and add to appropriate language array
+          const absolutePath = path.resolve(filePath);
+          const fileObj = {
+            uri: URI.file(absolutePath).toString(),
+            relativePath: path.relative(normalizedRootPath, absolutePath),
+            source: fs.readFileSync(absolutePath, "utf8"),
+          };
+          result[language].push(fileObj);
+        }
       }
     }
   }

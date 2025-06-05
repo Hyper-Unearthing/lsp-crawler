@@ -29,20 +29,51 @@ export const SymbolKind = {
 };
 
 export default class SymbolProcessor {
-  constructor(source, logger) {
+  constructor(source, logger, language) {
     this.source = source;
     this.logger = logger;
+    this.language = language;
     this.lines = source.split("\n");
   }
 
   /**
    * Process symbols to build code structure
    */
-  processSymbols(symbols) {
-    // Process each symbol
-    return symbols.map((symbol) => {
-      return this.processSymbol(symbol);
-    });
+  async processSymbols(symbols) {
+    // Process each symbol and track parent relationships
+    const results = [];
+    for (const symbol of symbols) {
+      const processed = await this.processSymbolWithParent(symbol, null);
+      if (processed) {
+        results.push(processed);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * Process symbol while maintaining parent relationship
+   */
+  async processSymbolWithParent(symbol, parent) {
+    // Set parent reference for qualified name building
+    symbol.parent = parent;
+
+    const processedSymbol = await this.processSymbol(symbol, parent);
+
+    // If this symbol has children, process them with this symbol as parent
+    if (symbol.children && symbol.children.length > 0) {
+      for (const child of symbol.children) {
+        const processedChild = await this.processSymbolWithParent(
+          child,
+          symbol
+        );
+        if (processedChild) {
+          processedSymbol.children.push(processedChild);
+        }
+      }
+    }
+
+    return processedSymbol;
   }
 
   /**
@@ -51,9 +82,10 @@ export default class SymbolProcessor {
   async processSymbol(symbol, parentSymbol = null) {
     const symbolKind = symbol.kind;
     let parsedSymbol = null;
+
     switch (symbolKind) {
       case SymbolKind.Class:
-        parsedSymbol = await this.processClass(symbol);
+        parsedSymbol = await this.processClass(symbol, parentSymbol);
         break;
 
       case SymbolKind.Method:
@@ -61,6 +93,25 @@ export default class SymbolProcessor {
       case SymbolKind.Constructor:
         parsedSymbol = await this.processMethod(symbol, parentSymbol);
         break;
+
+      case SymbolKind.Module:
+      case SymbolKind.Namespace:
+        parsedSymbol = await this.processModule(symbol, parentSymbol);
+        break;
+
+      default:
+        // For other symbol types, create a basic processed symbol
+        parsedSymbol = {
+          name: symbol.name,
+          kind: symbol.kind,
+          range: symbol.range,
+          language: this.language,
+        };
+        break;
+    }
+
+    if (!parsedSymbol) {
+      return null;
     }
 
     const sourceText = this.extractSourceTextFromRange(symbol.range);
@@ -68,24 +119,66 @@ export default class SymbolProcessor {
       ...parsedSymbol,
       id: await this.buildIdentifier(sourceText),
       source: sourceText,
+      language: this.language,
+      children: [],
     };
   }
 
   /**
    * Process a class symbol
    */
-  async processClass(symbol) {
+  async processClass(symbol, parentSymbol = null) {
     const className = symbol.name;
 
-    const methodPromises = (symbol.children || []).map((child) => {
-      return this.processSymbol(child, symbol);
-    });
     return {
-      name: className,
+      name: this.buildQualifiedName(className, parentSymbol),
       kind: symbol.kind,
       range: symbol.range,
-      methods: await Promise.all(methodPromises),
+      children: [],
+      language: this.language,
     };
+  }
+
+  /**
+   * Process a module or namespace symbol
+   */
+  async processModule(symbol, parentSymbol = null) {
+    const moduleName = symbol.name;
+
+    return {
+      name: this.buildQualifiedName(moduleName, parentSymbol),
+      kind: symbol.kind,
+      range: symbol.range,
+      language: this.language,
+    };
+  }
+
+  /**
+   * Build qualified class name (e.g., "Clients#ClaudeClient#OverloadError")
+   */
+  buildQualifiedName(symbolName, parentSymbol) {
+    if (!parentSymbol) {
+      return symbolName;
+    }
+
+    // Build parent chain
+    const parentChain = [];
+    let current = parentSymbol;
+
+    while (current) {
+      if (
+        [SymbolKind.Class, SymbolKind.Module, SymbolKind.Namespace].includes(
+          current.kind
+        )
+      ) {
+        parentChain.unshift(current.name);
+      }
+      current = current.parent;
+    }
+
+    return parentChain.length > 0
+      ? `${parentChain.join("#")}#${symbolName}`
+      : symbolName;
   }
 
   /**
