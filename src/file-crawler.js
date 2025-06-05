@@ -17,7 +17,7 @@ async function insertSymbol(symbol, parentSymbol = null, file) {
     case SymbolKind.Method:
     case SymbolKind.Function:
     case SymbolKind.Constructor:
-      await insertMethodNode(symbol);
+      await insertMethodNode({ ...symbol, fileUri: file.uri });
       if (parentSymbol?.kind === SymbolKind.Class) {
         await createRelationship(parentSymbol.id, symbol.id, "HAS");
       } else {

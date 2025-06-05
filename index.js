@@ -39,14 +39,14 @@ async function processLanguage(language, files, logger) {
   }
 
   logger.info("Finding all inserted methods");
-  const methods = await findAllMethods(language);
+  const { methodByFileMap, methods } = await findAllMethods(language);
 
   logger.info("Finding all method references");
   const methodsAndReferences = await Promise.all(
     methods.map(async (method) => {
       const result = await lspClient.findAllReferences(method, method.file);
       const mappedReferences = result.map((reference) => {
-        return methods.find((method) => {
+        return (methodByFileMap[reference.uri] || []).find((method) => {
           return (
             reference.uri == method.file &&
             reference.range.start.line > method.range.start.line &&
