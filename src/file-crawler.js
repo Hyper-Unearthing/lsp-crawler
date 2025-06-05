@@ -6,12 +6,35 @@ import {
 } from "./database.js";
 import SymbolProcessor, { SymbolKind } from "./symbol_parser.js";
 
-async function insertClass(symbol, file) {
-  await insertClassNode(symbol);
-  await createRelationship(file.id, symbol.id, "DECLARES");
-  for (const method of symbol.methods) {
-    await insertMethodNode(method);
-    await createRelationship(symbol.id, method.id, "HAS");
+async function insertSymbol(symbol, parentSymbol = null, file) {
+  // Use symbol enum to decide which persist method to use
+  switch (symbol.kind) {
+    case SymbolKind.Class:
+      await insertClassNode(symbol);
+      await createRelationship(file.id, symbol.id, "DECLARES");
+      break;
+
+    case SymbolKind.Method:
+    case SymbolKind.Function:
+    case SymbolKind.Constructor:
+      await insertMethodNode(symbol);
+      if (parentSymbol?.kind === SymbolKind.Class) {
+        await createRelationship(parentSymbol.id, symbol.id, "HAS");
+      } else {
+        await createRelationship(file.id, symbol.id, "DECLARES");
+      }
+      break;
+
+    default:
+      // For other symbol types, we might add more cases in the future
+      break;
+  }
+
+  // Recursively process children
+  if (symbol.children && symbol.children.length > 0) {
+    for (const child of symbol.children) {
+      await insertSymbol(child, symbol, file);
+    }
   }
 }
 
@@ -28,9 +51,8 @@ export default class FileCrawler {
     const language = this.lspSugar.language;
     const symbolProcessor = new SymbolProcessor(source, logger, language);
     let rawSymbols = await this.lspSugar.getDocumentSymbols(uri);
-    let symbols = (
-      await Promise.all(symbolProcessor.processSymbols(rawSymbols))
-    ).filter(Boolean);
+    let symbols = await symbolProcessor.processSymbols(rawSymbols);
+    symbols = symbols.filter(Boolean);
 
     const fileNode = {
       uri: uri,
@@ -41,20 +63,9 @@ export default class FileCrawler {
 
     await insertFileNode(fileNode);
 
+    // Process all symbols using the symbol enum to decide which persist method to use
     for (const symbol of symbols) {
-      if (symbol.kind === SymbolKind.Class) {
-        await insertClass(symbol, fileNode);
-        for (const method of symbol.methods) {
-          // await this.lspSugar.findAllReferences(method, uri);
-        }
-      } else if (
-        symbol.kind === SymbolKind.Method ||
-        symbol.kind === SymbolKind.Function
-      ) {
-        // await this.lspSugar.findAllReferences(symbol, uri);
-        await insertMethodNode(symbol);
-        await createRelationship(fileNode.id, symbol.id, "DECLARES");
-      }
+      await insertSymbol(symbol, null, fileNode);
     }
   }
 }
