@@ -46,6 +46,15 @@ async function processLanguage(language, files, logger) {
     methods.map(async (method) => {
       const result = await lspClient.findAllReferences(method, method.file);
       const mappedReferences = result.map((reference) => {
+        /**
+         * this will break for child methods potentially
+         * function myFunc(arr) {
+         *  return arr.map(YourFunc)
+         * }
+         *  yourFunc reference call will match to both myFunc and YourFunc since we are
+         *  just comparing if it is within the range of the method, and we are not managing child
+         *  references
+         */
         return (methodByFileMap[reference.uri] || []).find((method) => {
           return (
             reference.uri == method.file &&

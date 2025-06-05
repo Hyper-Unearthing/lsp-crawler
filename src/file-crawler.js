@@ -20,6 +20,14 @@ async function insertSymbol(symbol, parentSymbol = null, file) {
       await insertMethodNode({ ...symbol, fileUri: file.uri });
       if (parentSymbol?.kind === SymbolKind.Class) {
         await createRelationship(parentSymbol.id, symbol.id, "HAS");
+      } else if (
+        [
+          SymbolKind.Method,
+          SymbolKind.Function,
+          SymbolKind.Constructor,
+        ].includes(parentSymbol?.kind)
+      ) {
+        await createRelationship(parentSymbol.id, symbol.id, "CALLS");
       } else {
         await createRelationship(file.id, symbol.id, "DECLARES");
       }
@@ -62,7 +70,6 @@ export default class FileCrawler {
     };
 
     await insertFileNode(fileNode);
-
     // Process all symbols using the symbol enum to decide which persist method to use
     for (const symbol of symbols) {
       await insertSymbol(symbol, null, fileNode);
