@@ -12,9 +12,6 @@ export default class BaseServer {
     this.lspProcess.on("error", (err) => {
       console.log(err);
       console.error(`LSP process error: ${err.message}`);
-      console.error("You may need to install the language server with:");
-      console.error(`  ${installCmd}`);
-      socket.end();
     });
 
     this.lspProcess.on("exit", (code, signal) => {
