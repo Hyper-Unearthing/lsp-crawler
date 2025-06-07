@@ -201,5 +201,7 @@ export default class LspClient {
     };
 
     this.server.sendNotification("textDocument/didOpen", didOpenParams);
+    // Give the server a moment to process the file
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 }
