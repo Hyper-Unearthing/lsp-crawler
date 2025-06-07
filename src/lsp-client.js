@@ -1,11 +1,15 @@
 import path from "path";
 import fs from "fs";
 import TypeScriptServer from "./servers/typescript.js";
+import RubyServer from "./servers/ruby.js";
 
 function serverForLanguage(language) {
   switch (language) {
     case "typescript":
       return TypeScriptServer;
+
+    case "ruby":
+      return RubyServer;
 
     default:
       throw new Error(`Unsupported language: ${language}`);

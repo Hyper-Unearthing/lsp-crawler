@@ -32,13 +32,14 @@ export async function insertFileNode(file) {
 export async function insertMethodNode(method) {
   const session = getSession();
   await session.run(
-    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source, m.language = $language",
+    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source, m.language = $language, m.fileUri = $fileUri",
     {
       id: method.id,
       name: method.name,
       range: JSON.stringify(method.range) || "",
       source: method.source || "",
       language: method.language,
+      fileUri: method.fileUri,
     }
   );
   await session.close();
@@ -74,18 +75,28 @@ export async function createRelationship(fromId, toId, type) {
 export async function findAllMethods() {
   const session = getSession();
   const result = await session.run(`
-    MATCH (f:File)-[:DECLARES*]->(m:Method)
-    RETURN DISTINCT f.uri as file, m.name as name, m.range as range, m.id as id, m.language as language
-    UNION
-    MATCH (f:File)-[:DECLARES*]->(c:Class)-[:HAS]->(m:Method)
-    RETURN DISTINCT f.uri as file, m.name as name, m.range as range, m.id as id, m.language as language
+    MATCH (m:Method)
+    RETURN DISTINCT m.fileUri as file, m.name as name, m.range as range, m.id as id, m.language as language
+    ORDER BY m.fileUri, m.name
 `);
   await session.close();
-  return result.records.map((record) => {
+  const files = {};
+  const methods = [];
+  result.records.forEach((record) => {
     const hash = record.toObject();
-    return {
+    const method = {
       ...hash,
       range: JSON.parse(hash.range),
     };
+
+    if (!files[hash.file]) {
+      files[hash.file] = [];
+    }
+    files[hash.file].push(method);
+    methods.push(method);
   });
+  return {
+    methodByFileMap: files,
+    methods,
+  };
 }

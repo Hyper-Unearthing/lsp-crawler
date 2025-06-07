@@ -55,6 +55,7 @@ export function findSupportedFiles(
   supportedExtensions = {
     ".js": "typescript",
     ".ts": "typescript",
+    ".rb": "ruby",
   }
 ) {
   const result = {};
