@@ -56,6 +56,7 @@ export function findSupportedFiles(
     ".js": "typescript",
     ".ts": "typescript",
     ".rb": "ruby",
+    ".rs": "rust",
   }
 ) {
   const result = {};

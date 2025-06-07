@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import TypeScriptServer from "./servers/typescript.js";
 import RubyServer from "./servers/ruby.js";
+import RustServer from "./servers/rust.js";
 
 function serverForLanguage(language) {
   switch (language) {
@@ -10,6 +11,9 @@ function serverForLanguage(language) {
 
     case "ruby":
       return RubyServer;
+
+    case "rust":
+      return RustServer;
 
     default:
       throw new Error(`Unsupported language: ${language}`);
