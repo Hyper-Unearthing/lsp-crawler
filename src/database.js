@@ -32,11 +32,12 @@ export async function insertFileNode(file) {
 export async function insertMethodNode(method) {
   const session = getSession();
   await session.run(
-    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.source = $source, m.language = $language, m.fileUri = $fileUri",
+    "MERGE (m:Method {id: $id}) ON CREATE SET m.name = $name, m.range = $range, m.selectionRange = $selectionRange, m.source = $source, m.language = $language, m.fileUri = $fileUri",
     {
       id: method.id,
       name: method.name,
       range: JSON.stringify(method.range) || "",
+      selectionRange: JSON.stringify(method.selectionRange) || "",
       source: method.source || "",
       language: method.language,
       fileUri: method.fileUri,
@@ -53,6 +54,7 @@ export async function insertClassNode(klass) {
       id: klass.id,
       name: klass.name,
       range: JSON.stringify(klass.range) || "",
+      selectionRange: JSON.stringify(klass.selectionRange) || "",
       source: klass.source || "",
       language: klass.language,
     }
@@ -76,7 +78,7 @@ export async function findAllMethods() {
   const session = getSession();
   const result = await session.run(`
     MATCH (m:Method)
-    RETURN DISTINCT m.fileUri as file, m.name as name, m.range as range, m.id as id, m.language as language
+    RETURN DISTINCT m.fileUri as file, m.name as name, m.range as range, m.selectionRange as selectionRange, m.id as id, m.language as language
     ORDER BY m.fileUri, m.name
 `);
   await session.close();
@@ -87,6 +89,7 @@ export async function findAllMethods() {
     const method = {
       ...hash,
       range: JSON.parse(hash.range),
+      selectionRange: JSON.parse(hash.selectionRange),
     };
 
     if (!files[hash.file]) {

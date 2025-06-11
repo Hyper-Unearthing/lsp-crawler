@@ -105,6 +105,7 @@ export default class SymbolProcessor {
           name: symbol.name,
           kind: symbol.kind,
           range: symbol.range,
+          selectionRange: symbol.selectionRange,
           language: this.language,
         };
         break;
@@ -134,6 +135,7 @@ export default class SymbolProcessor {
       name: this.buildQualifiedName(className, parentSymbol),
       kind: symbol.kind,
       range: symbol.range,
+      selectionRange: symbol.selectionRange,
       children: [],
       language: this.language,
     };
@@ -149,6 +151,7 @@ export default class SymbolProcessor {
       name: this.buildQualifiedName(moduleName, parentSymbol),
       kind: symbol.kind,
       range: symbol.range,
+      selectionRange: symbol.selectionRange,
       language: this.language,
     };
   }
@@ -189,6 +192,7 @@ export default class SymbolProcessor {
     return {
       name: methodName,
       range: symbol.range,
+      selectionRange: symbol.selectionRange,
       kind: symbol.kind,
     };
   }

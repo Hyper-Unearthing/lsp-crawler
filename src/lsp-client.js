@@ -70,7 +70,7 @@ export default class LspClient {
   }
 
   async findAllReferences(targetMethod, fileUri) {
-    const targetPosition = targetMethod.range.start;
+    const targetPosition = targetMethod.selectionRange.start;
 
     const params = {
       textDocument: {
