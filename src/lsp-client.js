@@ -21,13 +21,17 @@ function serverForLanguage(language) {
 }
 
 export default class LspClient {
-  constructor({ language, logger }) {
+  constructor({ language, logger, rootPath }) {
     this.language = language;
     this.logger = logger;
+    this.rootPath = rootPath;
   }
 
   async connect() {
-    this.server = new (serverForLanguage(this.language))(this.logger);
+    this.server = new (serverForLanguage(this.language))(
+      this.logger,
+      this.rootPath
+    );
     this.server.start();
     await this.server.initialize();
   }
@@ -66,7 +70,7 @@ export default class LspClient {
   }
 
   async findAllReferences(targetMethod, fileUri) {
-    const targetPosition = targetMethod.range.start;
+    const targetPosition = targetMethod.selectionRange.start;
 
     const params = {
       textDocument: {

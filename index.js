@@ -27,6 +27,7 @@ async function processLanguage(language, files, logger) {
   const lspClient = new LspClient({
     language,
     logger,
+    rootPath: process.argv[2],
   });
 
   await lspClient.connect();
