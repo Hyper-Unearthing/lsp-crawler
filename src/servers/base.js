@@ -1,10 +1,11 @@
 export default class BaseServer {
-  constructor(logger) {
+  constructor(logger, rootPath) {
     this.lspProcess = null;
     this.buffer = "";
     this.requestId = 0;
     this.pendingRequests = new Map();
     this.logger = logger;
+    this.rootPath = `file://${rootPath}`;
   }
 
   start(logLevel = 1) {
