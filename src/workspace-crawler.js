@@ -83,6 +83,6 @@ export default class WorkspaceCrawler {
         }
       }
     }
-    lspClient.shutdown();
+    await lspClient.shutdown();
   }
 }

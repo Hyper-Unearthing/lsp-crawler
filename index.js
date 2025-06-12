@@ -13,3 +13,4 @@ const workspaceCrawler = new WorkspaceCrawler({
 });
 
 await workspaceCrawler.crawl();
+await db.close();
