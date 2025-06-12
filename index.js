@@ -1,29 +1,26 @@
 import Logger from "./src/logger.js";
 import LspClient from "./src/lsp-client.js";
-import {
-  deleteNodes,
-  findAllMethods,
-  createRelationship,
-} from "./src/database.js";
+import Database from "./src/database.js";
 import { findSupportedFiles } from "./src/file_utils.js";
 import FileCrawler from "./src/file-crawler.js";
 
 async function crawl() {
   const logger = new Logger({ level: "info" });
-  await deleteNodes();
+  const db = new Database({ logger });
+  await db.deleteNodes();
 
   const rootPath = process.argv[2];
 
   const filesByLanguageHash = findSupportedFiles(rootPath);
 
   for (const language in filesByLanguageHash) {
-    await processLanguage(language, filesByLanguageHash[language], logger);
+    await processLanguage(language, filesByLanguageHash[language], logger, db);
   }
 
   console.log("done");
 }
 
-async function processLanguage(language, files, logger) {
+async function processLanguage(language, files, logger, db) {
   const lspClient = new LspClient({
     language,
     logger,
@@ -36,11 +33,11 @@ async function processLanguage(language, files, logger) {
   }
 
   for (const file of files) {
-    await new FileCrawler(file, logger, lspClient).crawl();
+    await new FileCrawler(file, logger, lspClient, db).crawl();
   }
 
   logger.info("Finding all inserted methods");
-  const { methodByFileMap, methods } = await findAllMethods(language);
+  const { methodByFileMap, methods } = await db.findAllMethods(language);
 
   logger.info("Finding all method references");
   const methodsAndReferences = await Promise.all(
@@ -77,7 +74,7 @@ async function processLanguage(language, files, logger) {
     const methodAndReference = methodsAndReferences[i];
     for (const reference of methodAndReference.mappedReferences) {
       if (reference) {
-        await createRelationship(
+        await db.createRelationship(
           reference.id,
           methodAndReference.method.id,
           "CALLS"
