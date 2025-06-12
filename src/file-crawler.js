@@ -1,56 +1,11 @@
-import {
-  insertFileNode,
-  insertMethodNode,
-  createRelationship,
-  insertClassNode,
-} from "./database.js";
 import SymbolProcessor, { SymbolKind } from "./symbol_parser.js";
 
-async function insertSymbol(symbol, parentSymbol = null, file) {
-  // Use symbol enum to decide which persist method to use
-  switch (symbol.kind) {
-    case SymbolKind.Class:
-      await insertClassNode(symbol);
-      await createRelationship(file.id, symbol.id, "DECLARES");
-      break;
-
-    case SymbolKind.Method:
-    case SymbolKind.Function:
-    case SymbolKind.Constructor:
-      await insertMethodNode({ ...symbol, fileUri: file.uri });
-      if (parentSymbol?.kind === SymbolKind.Class) {
-        await createRelationship(parentSymbol.id, symbol.id, "HAS");
-      } else if (
-        [
-          SymbolKind.Method,
-          SymbolKind.Function,
-          SymbolKind.Constructor,
-        ].includes(parentSymbol?.kind)
-      ) {
-        await createRelationship(parentSymbol.id, symbol.id, "CALLS");
-      } else {
-        await createRelationship(file.id, symbol.id, "DECLARES");
-      }
-      break;
-
-    default:
-      // For other symbol types, we might add more cases in the future
-      break;
-  }
-
-  // Recursively process children
-  if (symbol.children && symbol.children.length > 0) {
-    for (const child of symbol.children) {
-      await insertSymbol(child, symbol, file);
-    }
-  }
-}
-
 export default class FileCrawler {
-  constructor(file, logger, lspSugar) {
+  constructor(file, logger, lspSugar, db) {
     this.file = file;
     this.logger = logger;
     this.lspSugar = lspSugar;
+    this.db = db;
   }
 
   async crawl() {
@@ -69,10 +24,50 @@ export default class FileCrawler {
       language: language,
     };
 
-    await insertFileNode(fileNode);
+    await this.db.insertFileNode(fileNode);
     // Process all symbols using the symbol enum to decide which persist method to use
     for (const symbol of symbols) {
-      await insertSymbol(symbol, null, fileNode);
+      await this.insertSymbol(symbol, null, fileNode);
+    }
+  }
+
+  async insertSymbol(symbol, parentSymbol = null, file) {
+    // Use symbol enum to decide which persist method to use
+    switch (symbol.kind) {
+      case SymbolKind.Class:
+        await this.db.insertClassNode(symbol);
+        await this.db.createRelationship(file.id, symbol.id, "DECLARES");
+        break;
+
+      case SymbolKind.Method:
+      case SymbolKind.Function:
+      case SymbolKind.Constructor:
+        await this.db.insertMethodNode({ ...symbol, fileUri: file.uri });
+        if (parentSymbol?.kind === SymbolKind.Class) {
+          await this.db.createRelationship(parentSymbol.id, symbol.id, "HAS");
+        } else if (
+          [
+            SymbolKind.Method,
+            SymbolKind.Function,
+            SymbolKind.Constructor,
+          ].includes(parentSymbol?.kind)
+        ) {
+          await this.db.createRelationship(parentSymbol.id, symbol.id, "CALLS");
+        } else {
+          await this.db.createRelationship(file.id, symbol.id, "DECLARES");
+        }
+        break;
+
+      default:
+        // For other symbol types, we might add more cases in the future
+        break;
+    }
+
+    // Recursively process children
+    if (symbol.children && symbol.children.length > 0) {
+      for (const child of symbol.children) {
+        await this.insertSymbol(child, symbol, file);
+      }
     }
   }
 }
