@@ -3,8 +3,11 @@
   "version": "0.0.1",
   "description": "crawl your code and builds a graph",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "test:watch": "node --test --watch",
+    "test:specific": "node --test javascript-test.js"
   },
   "dependencies": {
     "neo4j-driver": "^5.28.1",
