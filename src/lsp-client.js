@@ -37,7 +37,7 @@ export default class LspClient {
   }
 
   async shutdown() {
-    this.server.shutdown();
+    await this.server.shutdown();
   }
 
   async getDocumentSymbols(filePath) {

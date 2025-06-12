@@ -44,31 +44,33 @@ export default class WorkspaceCrawler {
     const methodsAndReferences = await Promise.all(
       methods.map(async (method) => {
         const result = await lspClient.findAllReferences(method, method.file);
-        const mappedReferences = result.map((reference) => {
-          /**
-           * this will break for child methods potentially
-           * function myFunc(arr) {
-           *  return arr.map(YourFunc)
-           * }
-           *  yourFunc reference call will match to both myFunc and YourFunc since we are
-           *  just comparing if it is within the range of the method, and we are not managing child
-           *  references
-           */
-          return (methodByFileMap[reference.uri] || []).find((method) => {
-            return (
-              reference.uri == method.file &&
-              reference.range.start.line > method.range.start.line &&
-              reference.range.start.line < method.range.end.line
-            );
+        const mappedReferences = result
+          .filter((reference) => reference && reference.uri) // Filter out undefined references
+          .map((reference) => {
+            /**
+             * this will break for child methods potentially
+             * function myFunc(arr) {
+             *  return arr.map(YourFunc)
+             * }
+             *  yourFunc reference call will match to both myFunc and YourFunc since we are
+             *  just comparing if it is within the range of the method, and we are not managing child
+             *  references
+             */
+            return (methodByFileMap[reference.uri] || []).find((method) => {
+              return (
+                reference.uri == method.file &&
+                reference.range.start.line > method.range.start.line &&
+                reference.range.start.line < method.range.end.line
+              );
+            });
           });
-        });
         return {
           method,
           references: result,
           mappedReferences,
         };
       })
-    ).catch((err) => this.logger.error(err));
+    );
 
     this.logger.info("Linking all method references in database");
     for (let i = 0; i < methodsAndReferences.length; i++) {
