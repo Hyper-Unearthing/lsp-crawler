@@ -4,6 +4,7 @@ export default class BaseServer {
     this.buffer = "";
     this.requestId = 0;
     this.pendingRequests = new Map();
+    this.activeTimeouts = new Set();
     this.logger = logger;
     this.rootPath = `file://${rootPath}`;
   }
@@ -17,7 +18,6 @@ export default class BaseServer {
 
     this.lspProcess.on("exit", (code, signal) => {
       console.log(`LSP process exited with code ${code} and signal ${signal}`);
-      this.shutdown();
     });
 
     this.lspProcess.stderr.on("data", (data) => {
@@ -111,7 +111,13 @@ export default class BaseServer {
       // This is a response to a request
       const requestId = message.id;
       if (this.pendingRequests.has(requestId)) {
-        const { resolve, reject } = this.pendingRequests.get(requestId);
+        const { resolve, reject, timeout } =
+          this.pendingRequests.get(requestId);
+
+        if (timeout) {
+          clearTimeout(timeout);
+          this.activeTimeouts.delete(timeout);
+        }
 
         if ("error" in message) {
           reject(new Error(message.error.message || "Unknown LSP error"));
@@ -153,8 +159,45 @@ export default class BaseServer {
     }
   }
 
-  shutdown() {
-    this.lspProcess.kill();
+  async shutdown() {
+    // Clear all pending timeouts
+    this.activeTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.activeTimeouts.clear();
+
+    // Reject all pending requests
+    this.pendingRequests.forEach(({ reject }) => {
+      reject(new Error("LSP server is shutting down"));
+    });
+    this.pendingRequests.clear();
+
+    try {
+      await this.sendRequest("shutdown", {});
+      this.sendNotification("exit", {});
+
+      // Wait for process to exit gracefully
+      await new Promise((resolve) => {
+        if (this.lspProcess.killed || this.lspProcess.exitCode !== null) {
+          resolve();
+          return;
+        }
+
+        const timeout = setTimeout(() => {
+          if (this.lspProcess && !this.lspProcess.killed) {
+            this.lspProcess.kill("SIGTERM");
+          }
+          resolve();
+        }, 2000);
+
+        this.lspProcess.once("exit", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      });
+    } catch (error) {
+      if (this.lspProcess && !this.lspProcess.killed) {
+        this.lspProcess.kill("SIGTERM");
+      }
+    }
   }
 
   sendNotification(method, params) {
@@ -185,17 +228,19 @@ export default class BaseServer {
       "utf8"
     )}\r\n\r\n${requestText}`;
     return new Promise((resolve, reject) => {
-      this.pendingRequests.set(id, { resolve, reject });
-
-      this.lspProcess.stdin.write(message);
-
       // Set a timeout for the request
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
+        this.activeTimeouts.delete(timeout);
         if (this.pendingRequests.has(id)) {
           this.pendingRequests.delete(id);
           reject(new Error(`Request timeout: ${method}`));
         }
       }, 30000); // 30 seconds timeout
+
+      this.activeTimeouts.add(timeout);
+      this.pendingRequests.set(id, { resolve, reject, timeout });
+
+      this.lspProcess.stdin.write(message);
     });
   }
 }
