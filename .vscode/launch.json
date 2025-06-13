@@ -5,19 +5,20 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug LSP Crawler",
+      "name": "JS Example",
       "type": "node",
       "request": "launch",
       "program": "${workspaceFolder}/index.js",
-      "args": ["/Users/seb/work/committer"],
+      "args": ["${workspaceFolder}/examples/javascript"],
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
     },
     {
-      "name": "Test Nested Classes",
+      "name": "Rust Example",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/test_nested_classes.js",
+      "program": "${workspaceFolder}/index.js",
+      "args": ["${workspaceFolder}/examples/rust"],
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
     }
