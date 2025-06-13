@@ -1,9 +1,12 @@
+import path from "path";
 import { findSupportedFiles } from "./file_utils.js";
 import LspClient from "./lsp-client.js";
 import FileCrawler from "./file-crawler.js";
+
 export default class WorkspaceCrawler {
   constructor({ rootDir, logger, db }) {
-    this.rootDir = rootDir;
+    this.rootDir = path.resolve(rootDir);
+    console.log(this.rootDir);
     this.logger = logger;
     this.db = db;
   }
@@ -25,7 +28,7 @@ export default class WorkspaceCrawler {
     const lspClient = new LspClient({
       language,
       logger,
-      rootPath: process.argv[2],
+      rootPath: this.rootDir,
     });
 
     await lspClient.connect();
