@@ -1,36 +1,28 @@
 import path from "path";
 import fs from "fs";
-import TypeScriptServer from "./servers/typescript.js";
-import RubyServer from "./servers/ruby.js";
-import RustServer from "./servers/rust.js";
+import BaseServer from "./servers/base.js";
+import { getLanguageConfigByExtension, getLanguageConfigByLanguage, defaultLanguageConfig } from "./language-config.js";
 
-function serverForLanguage(language) {
-  switch (language) {
-    case "typescript":
-      return TypeScriptServer;
-
-    case "ruby":
-      return RubyServer;
-
-    case "rust":
-      return RustServer;
-
-    default:
-      throw new Error(`Unsupported language: ${language}`);
-  }
-}
 
 export default class LspClient {
-  constructor({ language, logger, rootPath }) {
+  constructor({ language, logger, rootPath, languageConfig = defaultLanguageConfig }) {
     this.language = language;
     this.logger = logger;
     this.rootPath = rootPath;
+    this.languageConfig = languageConfig;
   }
 
   async connect() {
-    this.server = new (serverForLanguage(this.language))(
+    const config = getLanguageConfigByLanguage(this.language, this.languageConfig);
+    if (!config) {
+      throw new Error(`Unsupported language: ${this.language}`);
+    }
+    
+    this.server = new BaseServer(
       this.logger,
-      this.rootPath
+      this.rootPath,
+      config.serverCommand,
+      config.serverArgs
     );
     this.server.start();
     await this.server.initialize();
@@ -171,32 +163,8 @@ export default class LspClient {
   }
 
   getLanguageId(filePath) {
-    const ext = path.extname(filePath).toLowerCase();
-
-    switch (ext) {
-      case ".js":
-        return "javascript";
-      case ".ts":
-        return "typescript";
-      case ".py":
-        return "python";
-      case ".rb":
-        return "ruby";
-      case ".java":
-        return "java";
-      case ".c":
-        return "c";
-      case ".cpp":
-        return "cpp";
-      case ".cs":
-        return "csharp";
-      case ".go":
-        return "go";
-      case ".php":
-        return "php";
-      default:
-        return "plaintext";
-    }
+    const config = getLanguageConfigByExtension(filePath, this.languageConfig);
+    return config ? config.languageId : "plaintext";
   }
 
   /**
