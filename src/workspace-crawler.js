@@ -1,9 +1,12 @@
+import path from "path";
 import { findSupportedFiles } from "./file_utils.js";
 import LspClient from "./lsp-client.js";
 import FileCrawler from "./file-crawler.js";
+
 export default class WorkspaceCrawler {
   constructor({ rootDir, logger, db }) {
-    this.rootDir = rootDir;
+    this.rootDir = path.resolve(rootDir);
+    console.log(this.rootDir);
     this.logger = logger;
     this.db = db;
   }
@@ -25,7 +28,7 @@ export default class WorkspaceCrawler {
     const lspClient = new LspClient({
       language,
       logger,
-      rootPath: process.argv[2],
+      rootPath: this.rootDir,
     });
 
     await lspClient.connect();
@@ -44,31 +47,43 @@ export default class WorkspaceCrawler {
     const methodsAndReferences = await Promise.all(
       methods.map(async (method) => {
         const result = await lspClient.findAllReferences(method, method.file);
-        const mappedReferences = result.map((reference) => {
-          /**
-           * this will break for child methods potentially
-           * function myFunc(arr) {
-           *  return arr.map(YourFunc)
-           * }
-           *  yourFunc reference call will match to both myFunc and YourFunc since we are
-           *  just comparing if it is within the range of the method, and we are not managing child
-           *  references
-           */
-          return (methodByFileMap[reference.uri] || []).find((method) => {
-            return (
-              reference.uri == method.file &&
-              reference.range.start.line > method.range.start.line &&
-              reference.range.start.line < method.range.end.line
+        const mappedReferences = result
+          .filter((reference) => reference && reference.uri) // Filter out undefined references
+          .map((reference) => {
+            const containingMethods = (
+              methodByFileMap[reference.uri] || []
+            ).filter((method) => {
+              return (
+                reference.uri == method.file &&
+                reference.range.start.line >= method.range.start.line &&
+                reference.range.start.line <= method.range.end.line
+              );
+            });
+
+            // If multiple methods contain the reference, choose the most specific (smallest range)
+            const containingMethod = containingMethods.reduce(
+              (mostSpecific, current) => {
+                if (!mostSpecific) return current;
+
+                const currentSize =
+                  current.range.end.line - current.range.start.line;
+                const mostSpecificSize =
+                  mostSpecific.range.end.line - mostSpecific.range.start.line;
+
+                return currentSize < mostSpecificSize ? current : mostSpecific;
+              },
+              null
             );
+
+            return containingMethod;
           });
-        });
         return {
           method,
           references: result,
           mappedReferences,
         };
       })
-    ).catch((err) => this.logger.error(err));
+    );
 
     this.logger.info("Linking all method references in database");
     for (let i = 0; i < methodsAndReferences.length; i++) {
