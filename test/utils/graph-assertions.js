@@ -3,17 +3,14 @@ import assert from "node:assert";
 export async function assertAllRelationshipsFound(db, relationshipsJsonPath) {
   const fs = await import("fs/promises");
   const relationshipsData = await fs.readFile(relationshipsJsonPath, "utf8");
-  const expectedRelationships = relationshipsData
-    .trim()
-    .split("\n")
-    .map((line) => JSON.parse(line));
+  const expectedRelationships = JSON.parse(relationshipsData);
 
   for (const expectedRel of expectedRelationships) {
-    const fromId = expectedRel["n.id"];
-    const fromName = expectedRel["n.name"];
-    const relationshipType = expectedRel.relationship_type;
-    const toId = expectedRel["m.id"];
-    const toName = expectedRel["m.name"];
+    const fromId = expectedRel.from.id;
+    const fromName = expectedRel.from.name;
+    const relationshipType = expectedRel.relationship.type;
+    const toId = expectedRel.to.id;
+    const toName = expectedRel.to.name;
 
     const fromNodes = db
       .findNodes({})
@@ -50,17 +47,15 @@ export async function assertAllRelationshipsFound(db, relationshipsJsonPath) {
 export async function assertAllNodesFound(db, nodesJsonPath) {
   // Load expected nodes from the JSON file
   const fs = await import("fs/promises");
+  console.log(nodesJsonPath);
   const nodesData = await fs.readFile(nodesJsonPath, "utf8");
-  const expectedNodes = nodesData
-    .trim()
-    .split("\n")
-    .map((line) => JSON.parse(line));
+  const expectedNodes = JSON.parse(nodesData);
 
   // Verify all expected nodes are persisted in the database
   for (const expectedNode of expectedNodes) {
-    const nodeId = expectedNode.n.properties.id;
-    const expectedLabels = expectedNode.n.labels;
-    const expectedProperties = expectedNode.n.properties;
+    const nodeId = expectedNode.properties.id;
+    const expectedLabels = expectedNode.labels;
+    const expectedProperties = expectedNode.properties;
 
     // Find the node in the database by matching id and labels (with deserialized properties)
     const persistedNodes = db

@@ -17,8 +17,8 @@ function buildCrawler(rootDir) {
   });
 }
 
-describe("Javascript", () => {
-  test("finds the whole graph", async () => {
+describe("Graph tests", () => {
+  test("Javascript", async () => {
     const rootDir = "examples/javascript";
     const workspaceCrawler = buildCrawler(rootDir);
     await workspaceCrawler.crawl();
