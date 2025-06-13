@@ -1,0 +1,249 @@
+[
+  {
+    "from": {
+      "id": "database.ts",
+      "name": "database.ts"
+    },
+    "relationship": {
+      "type": "DECLARES"
+    },
+    "to": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "name": "Database"
+    }
+  },
+  {
+    "from": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "name": "Database"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "fb18941567ce345c70c31f77deb25ea95db6dc47834d0287d53227f848a1b124",
+      "name": "delete"
+    }
+  },
+  {
+    "from": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "name": "Database"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "0bda7f6ecaa4d0b2d5985b7ad29afb2fc3ef0ec16a9fbec2fdd15602c67fffbd",
+      "name": "findAll"
+    }
+  },
+  {
+    "from": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "name": "Database"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "efec32f9f852b6d60accc972b74f59f8529f39ed41a55b06de685901dd7cccaa",
+      "name": "persist"
+    }
+  },
+  {
+    "from": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "name": "Database"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "7c0e34540c903bc7e0aa90833b846b1d1ad187a3496c6ab8c16719c3f73c9a3e",
+      "name": "persistMany"
+    }
+  },
+  {
+    "from": {
+      "id": "7c0e34540c903bc7e0aa90833b846b1d1ad187a3496c6ab8c16719c3f73c9a3e",
+      "name": "persistMany"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "2d08bba757ff789eb9cbff72eb9806f7067cbd0a7700ec6b455fccb7a2eada78",
+      "name": "dataArray.forEach() callback"
+    }
+  },
+  {
+    "from": {
+      "id": "2d08bba757ff789eb9cbff72eb9806f7067cbd0a7700ec6b455fccb7a2eada78",
+      "name": "dataArray.forEach() callback"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "efec32f9f852b6d60accc972b74f59f8529f39ed41a55b06de685901dd7cccaa",
+      "name": "persist"
+    }
+  },
+  {
+    "from": {
+      "id": "model.ts",
+      "name": "model.ts"
+    },
+    "relationship": {
+      "type": "DECLARES"
+    },
+    "to": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "name": "Model"
+    }
+  },
+  {
+    "from": {
+      "id": "model.ts",
+      "name": "model.ts"
+    },
+    "relationship": {
+      "type": "DECLARES"
+    },
+    "to": {
+      "id": "c37054c3a8bd452bf79a5d607e1adc3cdf701fb7038fea62ad619c187df253af",
+      "name": "nameValidator"
+    }
+  },
+  {
+    "from": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "name": "Model"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "bc4fb28bdcb2770c31088714396dcf3c031c96ce7287ea77b3c0df885def1fe8",
+      "name": "constructor"
+    }
+  },
+  {
+    "from": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "name": "Model"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "80e258ff7950e07c8f936440eac498add0cf0735ddd1b849eada19d178734f1c",
+      "name": "deleteAll"
+    }
+  },
+  {
+    "from": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "name": "Model"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "05578c2cb766e75ab28109357b8913f6658e753ce0cb053db03c421ebe2d1a9e",
+      "name": "save"
+    }
+  },
+  {
+    "from": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "name": "Model"
+    },
+    "relationship": {
+      "type": "HAS"
+    },
+    "to": {
+      "id": "7961612f6484fed2a342457c1ce5e585e7388f24054aefe025ac548c61feea8f",
+      "name": "validate_input"
+    }
+  },
+  {
+    "from": {
+      "id": "80e258ff7950e07c8f936440eac498add0cf0735ddd1b849eada19d178734f1c",
+      "name": "deleteAll"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "20704e6e09eccd2a91f3d8e91f9a6dac040cb033658d8aae3708da0cbb838072",
+      "name": "forEach() callback"
+    }
+  },
+  {
+    "from": {
+      "id": "20704e6e09eccd2a91f3d8e91f9a6dac040cb033658d8aae3708da0cbb838072",
+      "name": "forEach() callback"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "fb18941567ce345c70c31f77deb25ea95db6dc47834d0287d53227f848a1b124",
+      "name": "delete"
+    }
+  },
+  {
+    "from": {
+      "id": "20704e6e09eccd2a91f3d8e91f9a6dac040cb033658d8aae3708da0cbb838072",
+      "name": "forEach() callback"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "0bda7f6ecaa4d0b2d5985b7ad29afb2fc3ef0ec16a9fbec2fdd15602c67fffbd",
+      "name": "findAll"
+    }
+  },
+  {
+    "from": {
+      "id": "05578c2cb766e75ab28109357b8913f6658e753ce0cb053db03c421ebe2d1a9e",
+      "name": "save"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "efec32f9f852b6d60accc972b74f59f8529f39ed41a55b06de685901dd7cccaa",
+      "name": "persist"
+    }
+  },
+  {
+    "from": {
+      "id": "05578c2cb766e75ab28109357b8913f6658e753ce0cb053db03c421ebe2d1a9e",
+      "name": "save"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "7961612f6484fed2a342457c1ce5e585e7388f24054aefe025ac548c61feea8f",
+      "name": "validate_input"
+    }
+  },
+  {
+    "from": {
+      "id": "7961612f6484fed2a342457c1ce5e585e7388f24054aefe025ac548c61feea8f",
+      "name": "validate_input"
+    },
+    "relationship": {
+      "type": "CALLS"
+    },
+    "to": {
+      "id": "c37054c3a8bd452bf79a5d607e1adc3cdf701fb7038fea62ad619c187df253af",
+      "name": "nameValidator"
+    }
+  }
+]

@@ -1,0 +1,202 @@
+[
+  {
+    "properties": {
+      "id": "database.ts",
+      "language": "typescript",
+      "name": "database.ts",
+      "uri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts"
+    },
+    "labels": [
+      "File"
+    ]
+  },
+  {
+    "properties": {
+      "id": "78a1da039cfc37bd25719069fc54ac3793aae810c4847419223285e357294162",
+      "language": "typescript",
+      "name": "Database",
+      "range": "{\"start\":{\"line\":2,\"character\":0},\"end\":{\"line\":20,\"character\":1}}",
+      "source": "export default class Database {\npersist(data: any): void {\nSomeDataLib.save(data);\n}\n\ndelete(id: string): void {\nSomeDataLib.delete(id);\n}\n\npersistMany(dataArray: any[]): void {\ndataArray.forEach((data) => {\nthis.persist(data);\n});\n}\n\nfindAll(): any[] {\nreturn SomeDataLib.findAll();\n}\n}"
+    },
+    "labels": [
+      "Class"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts",
+      "id": "fb18941567ce345c70c31f77deb25ea95db6dc47834d0287d53227f848a1b124",
+      "language": "typescript",
+      "name": "delete",
+      "range": "{\"start\":{\"line\":7,\"character\":2},\"end\":{\"line\":9,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":7,\"character\":2},\"end\":{\"line\":7,\"character\":8}}",
+      "source": "delete(id: string): void {\nSomeDataLib.delete(id);\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts",
+      "id": "0bda7f6ecaa4d0b2d5985b7ad29afb2fc3ef0ec16a9fbec2fdd15602c67fffbd",
+      "language": "typescript",
+      "name": "findAll",
+      "range": "{\"start\":{\"line\":17,\"character\":2},\"end\":{\"line\":19,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":17,\"character\":2},\"end\":{\"line\":17,\"character\":9}}",
+      "source": "findAll(): any[] {\nreturn SomeDataLib.findAll();\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts",
+      "id": "efec32f9f852b6d60accc972b74f59f8529f39ed41a55b06de685901dd7cccaa",
+      "language": "typescript",
+      "name": "persist",
+      "range": "{\"start\":{\"line\":3,\"character\":2},\"end\":{\"line\":5,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":3,\"character\":2},\"end\":{\"line\":3,\"character\":9}}",
+      "source": "persist(data: any): void {\nSomeDataLib.save(data);\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts",
+      "id": "7c0e34540c903bc7e0aa90833b846b1d1ad187a3496c6ab8c16719c3f73c9a3e",
+      "language": "typescript",
+      "name": "persistMany",
+      "range": "{\"start\":{\"line\":11,\"character\":2},\"end\":{\"line\":15,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":11,\"character\":2},\"end\":{\"line\":11,\"character\":13}}",
+      "source": "persistMany(dataArray: any[]): void {\ndataArray.forEach((data) => {\nthis.persist(data);\n});\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/database.ts",
+      "id": "2d08bba757ff789eb9cbff72eb9806f7067cbd0a7700ec6b455fccb7a2eada78",
+      "language": "typescript",
+      "name": "dataArray.forEach() callback",
+      "range": "{\"start\":{\"line\":12,\"character\":22},\"end\":{\"line\":14,\"character\":5}}",
+      "selectionRange": "{\"start\":{\"line\":12,\"character\":22},\"end\":{\"line\":14,\"character\":5}}",
+      "source": "dataArray.forEach((data) => {\nthis.persist(data);\n});"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "id": "model.ts",
+      "language": "typescript",
+      "name": "model.ts",
+      "uri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts"
+    },
+    "labels": [
+      "File"
+    ]
+  },
+  {
+    "properties": {
+      "id": "7f760dc8d90304dc53a9251f607bd7cd250bd62246c2e0e09c087d37b46fa60c",
+      "language": "typescript",
+      "name": "Model",
+      "range": "{\"start\":{\"line\":15,\"character\":0},\"end\":{\"line\":43,\"character\":1}}",
+      "source": "export default class Model {\nprivate db: Database;\n\nconstructor() {\nthis.db = new Database();\n}\n\nvalidate_input(input: InputData): boolean {\nreturn nameValidator(input.name);\n}\n\nsave(data: InputData): void {\nnew Error(\"asd\");\n// Validate before saving\nif (this.validate_input(data)) {\nthis.db.persist(data);\n}\n}\n\nstatic deleteAll(): void {\n// Static method to delete all data\nconst db = new Database();\ndb.findAll().forEach(function (item: any) {\nif (item.id) {\ndb.delete(item.id);\n}\n});\n}\n}"
+    },
+    "labels": [
+      "Class"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "bc4fb28bdcb2770c31088714396dcf3c031c96ce7287ea77b3c0df885def1fe8",
+      "language": "typescript",
+      "name": "constructor",
+      "range": "{\"start\":{\"line\":18,\"character\":2},\"end\":{\"line\":20,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":18,\"character\":2},\"end\":{\"line\":20,\"character\":3}}",
+      "source": "constructor() {\nthis.db = new Database();\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "80e258ff7950e07c8f936440eac498add0cf0735ddd1b849eada19d178734f1c",
+      "language": "typescript",
+      "name": "deleteAll",
+      "range": "{\"start\":{\"line\":34,\"character\":2},\"end\":{\"line\":42,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":34,\"character\":9},\"end\":{\"line\":34,\"character\":18}}",
+      "source": "static deleteAll(): void {\n// Static method to delete all data\nconst db = new Database();\ndb.findAll().forEach(function (item: any) {\nif (item.id) {\ndb.delete(item.id);\n}\n});\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "20704e6e09eccd2a91f3d8e91f9a6dac040cb033658d8aae3708da0cbb838072",
+      "language": "typescript",
+      "name": "forEach() callback",
+      "range": "{\"start\":{\"line\":37,\"character\":25},\"end\":{\"line\":41,\"character\":5}}",
+      "selectionRange": "{\"start\":{\"line\":37,\"character\":25},\"end\":{\"line\":41,\"character\":5}}",
+      "source": "db.findAll().forEach(function (item: any) {\nif (item.id) {\ndb.delete(item.id);\n}\n});"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "05578c2cb766e75ab28109357b8913f6658e753ce0cb053db03c421ebe2d1a9e",
+      "language": "typescript",
+      "name": "save",
+      "range": "{\"start\":{\"line\":26,\"character\":2},\"end\":{\"line\":32,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":26,\"character\":2},\"end\":{\"line\":26,\"character\":6}}",
+      "source": "save(data: InputData): void {\nnew Error(\"asd\");\n// Validate before saving\nif (this.validate_input(data)) {\nthis.db.persist(data);\n}\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "7961612f6484fed2a342457c1ce5e585e7388f24054aefe025ac548c61feea8f",
+      "language": "typescript",
+      "name": "validate_input",
+      "range": "{\"start\":{\"line\":22,\"character\":2},\"end\":{\"line\":24,\"character\":3}}",
+      "selectionRange": "{\"start\":{\"line\":22,\"character\":2},\"end\":{\"line\":22,\"character\":16}}",
+      "source": "validate_input(input: InputData): boolean {\nreturn nameValidator(input.name);\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  },
+  {
+    "properties": {
+      "fileUri": "file:///Users/seb/work/lsp-crawler/examples/typescript/model.ts",
+      "id": "c37054c3a8bd452bf79a5d607e1adc3cdf701fb7038fea62ad619c187df253af",
+      "language": "typescript",
+      "name": "nameValidator",
+      "range": "{\"start\":{\"line\":7,\"character\":0},\"end\":{\"line\":13,\"character\":1}}",
+      "selectionRange": "{\"start\":{\"line\":7,\"character\":9},\"end\":{\"line\":7,\"character\":22}}",
+      "source": "function nameValidator(name: string): boolean {\n// Simple validation: name must be a non-empty string\nif (typeof name === \"string\" && name.trim().length > 0) {\nreturn true;\n}\nreturn false;\n}"
+    },
+    "labels": [
+      "Method"
+    ]
+  }
+]
