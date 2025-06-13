@@ -6,7 +6,6 @@ import FileCrawler from "./file-crawler.js";
 export default class WorkspaceCrawler {
   constructor({ rootDir, logger, db }) {
     this.rootDir = path.resolve(rootDir);
-    console.log(this.rootDir);
     this.logger = logger;
     this.db = db;
   }
