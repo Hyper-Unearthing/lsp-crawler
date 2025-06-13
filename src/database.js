@@ -104,6 +104,47 @@ export default class Database {
     }
   }
 
+  async findAllNodes() {
+    const session = this.getSession();
+    try {
+      const result = await session.run(
+        `MATCH (n) RETURN n, labels(n) as labels`
+      );
+      return result.records.map((record) => ({
+        properties: record.get("n").properties,
+        labels: record.get("labels"),
+      }));
+    } finally {
+      await session.close();
+    }
+  }
+
+  async findAllRelationships() {
+    const session = this.getSession();
+    try {
+      const result = await session.run(
+        `MATCH (n)-[r]->(m)
+         RETURN n.id, n.name, type(r) AS relationship_type, m.id, m.name
+        `
+      );
+      return result.records.map((record) => ({
+        from: {
+          id: record.get("n.id"),
+          name: record.get("n.name"),
+        },
+        relationship: {
+          type: record.get("relationship_type"),
+        },
+        to: {
+          id: record.get("m.id"),
+          name: record.get("m.name"),
+        },
+      }));
+    } finally {
+      await session.close();
+    }
+  }
+
   async findAllMethods() {
     const session = this.getSession();
     try {
