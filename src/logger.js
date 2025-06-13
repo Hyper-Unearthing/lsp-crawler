@@ -30,8 +30,11 @@ export default class Logger {
   /**
    * Log an error message
    */
-  error(message) {
+  error(message, error) {
     this.writeLog("error", message);
+    if (error) {
+      this.writeLog("error", error.stack);
+    }
   }
 
   /**
@@ -59,9 +62,6 @@ export default class Logger {
     if (this.isLevelEnabled(level)) {
       const consoleMethod = console[level];
       consoleMethod(this.formatMessage(level, message));
-      if (level === "error") {
-        console.trace();
-      }
     }
   }
 }
