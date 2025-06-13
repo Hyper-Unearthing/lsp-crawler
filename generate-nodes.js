@@ -26,10 +26,8 @@ async function generateNodeJson() {
 
     await workspaceCrawler.crawl();
 
-    logger.info("Fetching all relationships from database...");
     const relationships = await db.findAllRelationships();
-
-    logger.info(`Found ${relationships.length} relationships`);
+    const nodes = await db.findAllNodes();
 
     // Ensure output directory exists
     const outputDir = path.dirname(outputPath);
@@ -42,7 +40,10 @@ async function generateNodeJson() {
       JSON.stringify(relationships, null, 2)
     );
 
-    logger.info(`Relationships exported to ${outputPath}`);
+    fs.writeFileSync(
+      `${outputPath}/nodes.json`,
+      JSON.stringify(nodes, null, 2)
+    );
   } catch (error) {
     // console.log(error);
     logger.error("Error generating node.json:", error);

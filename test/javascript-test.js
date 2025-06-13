@@ -31,4 +31,17 @@ describe("Graph tests", () => {
       "examples/javascript/relationships.json"
     );
   });
+  test("Typescript", async () => {
+    const rootDir = "examples/typescript";
+    const workspaceCrawler = buildCrawler(rootDir);
+    await workspaceCrawler.crawl();
+    await assertAllNodesFound(
+      workspaceCrawler.db,
+      "examples/typescript/nodes.json"
+    );
+    await assertAllRelationshipsFound(
+      workspaceCrawler.db,
+      "examples/typescript/relationships.json"
+    );
+  });
 });
