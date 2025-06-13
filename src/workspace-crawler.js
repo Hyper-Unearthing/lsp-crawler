@@ -50,22 +50,32 @@ export default class WorkspaceCrawler {
         const mappedReferences = result
           .filter((reference) => reference && reference.uri) // Filter out undefined references
           .map((reference) => {
-            /**
-             * this will break for child methods potentially
-             * function myFunc(arr) {
-             *  return arr.map(YourFunc)
-             * }
-             *  yourFunc reference call will match to both myFunc and YourFunc since we are
-             *  just comparing if it is within the range of the method, and we are not managing child
-             *  references
-             */
-            return (methodByFileMap[reference.uri] || []).find((method) => {
+            const containingMethods = (
+              methodByFileMap[reference.uri] || []
+            ).filter((method) => {
               return (
                 reference.uri == method.file &&
-                reference.range.start.line > method.range.start.line &&
-                reference.range.start.line < method.range.end.line
+                reference.range.start.line >= method.range.start.line &&
+                reference.range.start.line <= method.range.end.line
               );
             });
+
+            // If multiple methods contain the reference, choose the most specific (smallest range)
+            const containingMethod = containingMethods.reduce(
+              (mostSpecific, current) => {
+                if (!mostSpecific) return current;
+
+                const currentSize =
+                  current.range.end.line - current.range.start.line;
+                const mostSpecificSize =
+                  mostSpecific.range.end.line - mostSpecific.range.start.line;
+
+                return currentSize < mostSpecificSize ? current : mostSpecific;
+              },
+              null
+            );
+
+            return containingMethod;
           });
         return {
           method,
