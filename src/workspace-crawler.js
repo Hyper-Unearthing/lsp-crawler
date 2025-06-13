@@ -2,15 +2,29 @@ import path from "path";
 import { findSupportedFiles } from "./file_utils.js";
 import LspClient from "./lsp-client.js";
 import FileCrawler from "./file-crawler.js";
+import { loadCustomConfig } from "./language-config.js";
 
 export default class WorkspaceCrawler {
-  constructor({ rootDir, logger, db }) {
+  constructor({ rootDir, logger, db, configPath }) {
     this.rootDir = path.resolve(rootDir);
     this.logger = logger;
     this.db = db;
+    this.configPath = configPath;
+    this.languageConfig = null;
   }
 
   async crawl(files) {
+    // Load language configuration
+    try {
+      this.languageConfig = loadCustomConfig(this.configPath);
+      if (this.configPath) {
+        this.logger.info(`Loaded custom language config from: ${this.configPath}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to load custom config: ${error.message}`);
+      throw error;
+    }
+
     const filesByLanguageHash = findSupportedFiles(this.rootDir);
 
     for (const language in filesByLanguageHash) {
@@ -28,6 +42,7 @@ export default class WorkspaceCrawler {
       language,
       logger,
       rootPath: this.rootDir,
+      languageConfig: this.languageConfig,
     });
 
     await lspClient.connect();

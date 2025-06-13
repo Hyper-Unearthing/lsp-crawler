@@ -1,5 +1,9 @@
+import { spawn } from "child_process";
+import path from "path";
+import os from "os";
+
 export default class BaseServer {
-  constructor(logger, rootPath) {
+  constructor(logger, rootPath, serverCommand, serverArgs) {
     this.lspProcess = null;
     this.buffer = "";
     this.requestId = 0;
@@ -7,10 +11,12 @@ export default class BaseServer {
     this.activeTimeouts = new Set();
     this.logger = logger;
     this.rootPath = `file://${rootPath}`;
+    this.serverCommand = serverCommand;
+    this.serverArgs = serverArgs || [];
   }
 
   start(logLevel = 1) {
-    this.spawnLspProcess(logLevel);
+    this.spawnLspProcess();
     this.lspProcess.on("error", (err) => {
       console.log(err);
       console.error(`LSP process error: ${err.message}`);
@@ -29,6 +35,27 @@ export default class BaseServer {
       this.processBuffer();
     });
   }
+
+  spawnLspProcess() {
+    const resolvedCommand = this.resolveServerCommand(this.serverCommand);
+    this.lspProcess = spawn(resolvedCommand, this.serverArgs, {
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+  }
+
+  resolveServerCommand(serverCommand) {
+    // If it's a path (contains / or \ or starts with ~ or .), resolve it to absolute path
+    if (serverCommand.includes('/') || serverCommand.includes('\\') || 
+        serverCommand.startsWith('~') || serverCommand.startsWith('.')) {
+      if (serverCommand.startsWith('~')) {
+        return path.join(os.homedir(), serverCommand.slice(1));
+      }
+      return path.resolve(serverCommand);
+    }
+    // If it's just a command name, return as-is to be found in PATH
+    return serverCommand;
+  }
+
   async initialize() {
     const params = {
       processId: process.pid,
